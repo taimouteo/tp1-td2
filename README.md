@@ -1,67 +1,79 @@
-Trabajo Práctico 1, Tecnología Digital II.
+# School Project N°1: ASM and Processor Architecture (Subject: Computer Systems)
 
-Alumnos: Bautista Goya, Timo Doeswijk, Federico Del Cuadro.
+This practical assignment consists of analyzing and extending a microarchitecture designed using the `Logisim` simulator. The goals are to code simple programs in assembly language, modify parts of the architecture, and design new instructions.
 
-Ejercicio 2:
-Ensamblar y ejecutar - Escribir el siguiente archivo, compilarlo y cargarlo en la memoria de la máquina:
+The simulator can be downloaded from the website http://www.cburch.com/logisim/ or from the Ubuntu repositories. It requires Java 1.5 or higher. To run it, enter the following command in a console:
+
+`java -jar logisim.jar`
+
+<img width="657" height="273" alt="image" src="https://github.com/user-attachments/assets/70a17fb8-681a-4c24-952e-e72fb482399b" />
+
+To download the OrgaSmall Architecture, go to: https://github.com/fokerman/microOrgaSmall/ The version we will be using is under the name OrgaSmallWithStack.
+
+### Assemble and Execute - Write the following file, compile it, and load it into the machine's memory:
 ![image](https://github.com/user-attachments/assets/a830e215-fe1b-4c8c-98d1-dc9a3495dcd5)
 
-a) Previamente a ejecutar el programa, describir con palabras el comportamiento esperado del mismo. No se debe explicar instrucción por instrucción, la idea es entender que hace el programa y qué resultado genera.
-Solución:
-El programa compara dos valores de registros, aumentando en +1 el valor del primero, hasta que ambos llegan al mismo valor (0x70). Cuando no se cumple la condición de que sean iguales el programa, utilizando la pila y otros registros, almacena valores decrecientes en las direcciones de memoria correspondientes al registro que aumenta su valor, comenzando por 0xAF (en la dirección 0x50) y terminando con el valor 0x90 (en la dirección 0x6F). Cuando ambos registros comparados son 0, es decir, son iguales, el programa ejecuta la función JZ (la flag Z está encendida) al espacio de memoria con la etiqueta fin, y como los valores de memoria de fin son 0xA0 y 0x00 (10100000 en binario), se ejecuta la función JMP nuevamente (opcode: 10100) a la dirección de memoria 0x00.
+a) Before running the program, describe its expected behavior in words. Do not explain it instruction by instruction; the goal is to understand what the program does and what result it generates. 
 
-b) Identificar la dirección de memoria de cada una de las etiquetas del programa.
-Solución:
-main: [0x00]; 
-aca: [0x0a]; 
-coso2: [0x14];
-fin: [0x20];
-halt: [0x22].
+`Solution`: The program compares the values of two registers, incrementing the first by +1 until both reach the same value (0x70). While the equality condition is not met, the program—using the stack and other registers—stores decreasing values into memory addresses corresponding to the incrementing register, starting from 0xAF (at address 0x50) and ending with 0x90 (at address 0x6F). When both compared registers reach the same value, the JZ (Jump if Zero) instruction executes because the Z flag is set. It jumps to the memory space labeled fin. Since the values at fin are 0xA0 and 0x00, a JMP instruction is executed (opcode: 10100) back to memory address 0x00, creating a loop.
 
-c) Ejecutar e identificar de ser posible cuantos ciclos de clock son necesarios para que el programa llegue a la instrucción JMP halt.
-Solución:
-No es posible ya que nunca llega al halt por lo explicado anteriormente (punto “a”).
+b) Identify the memory address for each of the program's labels. 
 
-d) ¿Cuántas microinstrucciones son necesarias para ejecutar la instrucción ADD? ¿Cuántas para la instrucción JZ? ¿Cuántas para la instrucción JMP?
-Solución:
-ADD: 4 microinstrucciones;
-JZ: 2 microinstrucciones;
-JMP: 1 microinstrucción.
-	
-e) ¿El programa utiliza la pila?, ¿Qué datos son almacenados en la pila?
-Solución:
-Sí, en la pila es almacenado el valor inicial del registro R0, el cuál fue establecido en 0x00. El valor del registro se introduce en la pila (con la instrucción PUSH) y, luego de realizar operaciones con este registro y cambiar su valor, se ejecuta la instrucción POP y vuelve a tener el valor previo.
+`Solution`:
 
-f) Describir detalladamente el funcionamiento de las instrucciones PUSH, POP, CALL y RET.
-Solución:
-PUSH |Rx|, Ry: Almacena el valor de Ry en la dirección apuntada por Rx, el cuál es utilizado como puntero de la pila (por convención R7). Luego, resta 0x01 al valor de Rx lo cuál hace que apunte a la dirección de memoria anterior a la que apuntaba y que ese lugar sea el nuevo tope de la pila.
+main: [0x00]
+aca: [0x0a]
+coso2: [0x14]
+fin: [0x20]
+halt: [0x22]
 
-POP |Rx|, Ry: Retira el último valor almacenado en la pila (uno debajo del puntero) y lo sobreescribe en Ry. También cambia el valor del registro utilizado como puntero sumándole 1 y haciendo que apunte a la dirección de memoria siguiente.
+c) Execute the program and identify, if possible, how many clock cycles are required for the program to reach the JMP halt instruction. 
 
-CALL |Rx|,...
-…Ry: El valor actual de PC (instrucción próxima a realizar) es enviado a la pila en la dirección apuntada por Rx, el puntero es retrocedido una posición y el valor de Ry es enviado al PC
-…M: ídem al anterior, solo que en lugar de Ry funciona con un valor inmediato.
+`Solution`: It is not possible to reach the halt instruction because, as explained in point "a", the program enters an infinite loop before reaching it.
 
-RET |Rx|: Opuesto al funcionamiento de CALL, asigna al PC el valor de la memoria en la posición de Rx y avanza el puntero de Rx.
+d) How many microinstructions are required to execute the ADD instruction? How many for JZ? How many for JMP? 
 
-Ejercicio 3:
-Ampliando la máquina - Agregar las siguientes nuevas instrucciones:
+`Solution`:
+
+ADD: 4 microinstructions
+JZ: 2 microinstructions
+JMP: 1 microinstruction
+
+e) Does the program use the stack? What data is stored in the stack? 
+
+`Solution`: Yes. The initial value of register R0 (which was set to 0x00) is stored in the stack. The register value is pushed onto the stack (using the PUSH instruction); after performing operations and changing its value, the POP instruction is executed to restore the previous value to the register.
+
+f) Describe in detail the operation of the PUSH, POP, CALL, and RET instructions. 
+
+`Solution`:
+
+PUSH |Rx|, Ry: Stores the value of Ry at the memory address pointed to by Rx (which is used as the Stack Pointer, usually R7 by convention). It then subtracts 0x01 from the value of Rx, making it point to the previous memory address, which becomes the new top of the stack.
+
+POP |Rx|, Ry: Retrieves the last value stored in the stack (the one immediately below the current pointer) and overwrites Ry with it. It also increments the value of the register used as the pointer by 1, moving it to the next memory address.
+
+CALL |Rx|, ...
+
+...Ry: The current value of the PC (the address of the next instruction) is pushed onto the stack at the address pointed to by Rx. The pointer is moved back one position, and the value of Ry is loaded into the PC.
+
+...M: Same as above, but uses an immediate value M instead of the register Ry.
+
+RET |Rx|: The opposite of CALL. It assigns the value stored in memory at the position pointed to by Rx to the PC and increments the Rx pointer.
+
+### Extending the Machine - Adding the Following New Instructions:
 <img width="804" alt="Untitled1" src="https://github.com/user-attachments/assets/e8fcbe6d-ea5d-43ae-b773-6b61a4398b0b">
 
-Solución:
-La solución del ejercicio fue adjuntada en el archivo ADDINMEM.zip, el cual contiene los siguientes 4 archivos:
-ADDINMEM.ops: implementación de la microinstrucción ADDINMEM por separado.
-microOps_v2.ops: implementación de la microinstrucción ADDINMEM en conjunto con el resto de las microinstrucciones del procesador.
-microOps_v2.mem: archivo de memoria con las instrucciones del procesador (incluyendo ADDINMEM), el cuál debe ser cargado en la memoria de la unidad de control para su funcionamiento en logisim.
-assembler_v2.py: Archivo assembler.py modificado que incluye a la nueva microinstrucción.
+`Solution`:
+The solution for this exercise is included in the ADDINMEM.zip file, which contains the following four files:
+- `ADDINMEM.ops`: Independent implementation of the ADDINMEM microinstruction.
+- `microOps_v2.ops`: Implementation of the ADDINMEM microinstruction integrated with the rest of the processor's microinstructions.
+- `microOps_v2.mem`: Memory file containing the processor instructions (including ADDINMEM), which must be loaded into the Control Unit memory for operation in Logisim.
+- `assembler_v2.py`: Modified assembler.py file that includes the new microinstruction.
 
-Ejercicio 4:
-Programar - Escribir en ASM las siguientes funciones:
+### Programming - Write the following instructions in ASM:
 <img width="936" alt="Untitled" src="https://github.com/user-attachments/assets/1f14b9c5-eba5-42ca-8559-e5a50e4ddbaa">
 
-
-Solución:
-La solución del ejercicio fue adjuntada en el archivo processArray.zip, el cual contiene los siguientes 3 archivos:
-processArray.asm: función processArray escrita en el lenguaje ensamblador, con instrucciones permitidas para el procesador.
-processArray.mem: archivo de memoria con las instrucciones codificadas correspondientes a la función, el cual se carga en la memoria RAM para el funcionamiento del programa.
-processArray.txt: archivo de texto con las instrucciones en ensamblador del programa y sus direcciones de memoria.
+`Solution`:
+The solution for this exercise is included in the processArray.zip file, which contains the following three files:
+- `processArray.asm`: The processArray function written in assembly language, using the instructions supported by the processor.
+- `processArray.mem`: A memory file containing the encoded instructions for the function, which must be loaded into the RAM for the program to run.
+- `processArray.txt`: A text file containing the program's assembly instructions along with their corresponding memory addresses.
